@@ -2,7 +2,7 @@
 CINDER
 ======
 
-You have come across a storage service for an open cloud computing service.
+Your have come across a storage service for an open cloud computing service.
 It has identified itself as `Cinder`. It was abstracted from the Nova project.
 
 * Wiki: http://wiki.openstack.org/Cinder
