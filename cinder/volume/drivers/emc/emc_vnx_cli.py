@@ -1395,9 +1395,16 @@ class CommandLineHelper(object):
         command_get_storage_group = ('storagegroup', '-list',
                                      '-gname', name, '-host',
                                      '-iscsiAttributes')
-
-        out, rc = self.command_execute(*command_get_storage_group,
+        retry = 0
+        while retry < self.max_retries:
+            out, rc = self.command_execute(*command_get_storage_group,
                                        poll=poll)
+            if rc != 0:
+                continue
+            else:
+                break
+            retry++
+
         if rc != 0:
             self._raise_cli_error(command_get_storage_group, rc, out)
 
