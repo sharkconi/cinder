@@ -167,10 +167,10 @@ class ShellCommands(object):
 
 
 def _db_error(caught_exception):
-    print('%s' % caught_exception)
-    print(_("The above error may show that the database has not "
+    print(unicode('%s' % caught_exception))
+    print(unicode(_("The above error may show that the database has not "
             "been created.\nPlease create a database using "
-            "'cinder-manage db sync' before running this command."))
+            "'cinder-manage db sync' before running this command.")))
     exit(1)
 
 
@@ -185,7 +185,7 @@ class HostCommands(object):
         Can be filtered by zone.
         args: [zone]
         """
-        print(_("%(host)-25s\t%(zone)-15s") % {'host': 'host', 'zone': 'zone'})
+        print(unicode(_("%(host)-25s\t%(zone)-15s") % {'host': 'host', 'zone': 'zone'}))
         ctxt = context.get_admin_context()
         services = objects.ServiceList.get_all(ctxt)
         if zone:
@@ -196,9 +196,9 @@ class HostCommands(object):
                 hosts.append(srv)
 
         for h in hosts:
-            print(_("%(host)-25s\t%(availability_zone)-15s")
+            print(unicode(_("%(host)-25s\t%(availability_zone)-15s")
                   % {'host': h['host'],
-                     'availability_zone': h['availability_zone']})
+                     'availability_zone': h['availability_zone']}))
 
 
 class DbCommands(object):
@@ -215,9 +215,9 @@ class DbCommands(object):
 
     def version(self):
         """Print the current database version."""
-        print(migration.db_version(db_api.get_engine(),
+        print(unicode(migration.db_version(db_api.get_engine(),
                                    db_migration.MIGRATE_REPO_PATH,
-                                   db_migration.INIT_VERSION))
+                                   db_migration.INIT_VERSION)))
 
     @args('age_in_days', type=int,
           help='Purge deleted rows older than age in days')
@@ -225,7 +225,7 @@ class DbCommands(object):
         """Purge deleted rows older than a given age from cinder tables."""
         age_in_days = int(age_in_days)
         if age_in_days <= 0:
-            print(_("Must supply a positive, non-zero value for age"))
+            print(unicode(_("Must supply a positive, non-zero value for age")))
             exit(1)
         ctxt = context.get_admin_context()
         db.purge_deleted_rows(ctxt, age_in_days)
@@ -238,7 +238,7 @@ class VersionCommands(object):
         pass
 
     def list(self):
-        print(version.version_string())
+        print(unicode(version.version_string()))
 
     def __call__(self):
         self.list()
@@ -269,14 +269,14 @@ class VolumeCommands(object):
         host = vutils.extract_host(volume.host) if volume.host else None
 
         if not host:
-            print(_("Volume not yet assigned to host."))
-            print(_("Deleting volume from database and skipping rpc."))
+            print(unicode(_("Volume not yet assigned to host.")))
+            print(unicode(_("Deleting volume from database and skipping rpc.")))
             volume.destroy()
             return
 
         if volume.status == 'in-use':
-            print(_("Volume is in-use."))
-            print(_("Detach volume from instance and then try again."))
+            print(unicode(_("Volume is in-use.")))
+            print(unicode(_("Detach volume from instance and then try again.")))
             return
 
         cctxt = self._rpc_client().prepare(server=host)
@@ -317,10 +317,10 @@ class ConfigCommands(object):
         """
         param = param and param.strip()
         if param:
-            print('%s = %s' % (param, CONF.get(param)))
+            print(unicode('%s = %s' % (param, CONF.get(param))))
         else:
             for key, value in CONF.items():
-                print('%s = %s' % (key, value))
+                print(unicode('%s = %s' % (key, value)))
 
 
 class GetLogCommands(object):
@@ -340,12 +340,12 @@ class GetLogCommands(object):
                     if line.find(" ERROR ") > 0:
                         error_found += 1
                         if print_name == 0:
-                            print(log_file + ":-")
+                            print(unicode(log_file + ":-"))
                             print_name = 1
-                        print(_("Line %(dis)d : %(line)s") %
-                              {'dis': len(lines) - index, 'line': line})
+                        print(unicode(_("Line %(dis)d : %(line)s") %
+                              {'dis': len(lines) - index, 'line': line}))
         if error_found == 0:
-            print(_("No errors in logfiles!"))
+            print(unicode(_("No errors in logfiles!")))
 
     @args('num_entries', nargs='?', type=int, default=10,
           help='Number of entries to list (default: %(default)d)')
@@ -359,20 +359,20 @@ class GetLogCommands(object):
         elif os.path.exists('/var/log/messages'):
             log_file = '/var/log/messages'
         else:
-            print(_("Unable to find system log file!"))
+            print(unicode(_("Unable to find system log file!")))
             sys.exit(1)
         lines = [line.strip() for line in open(log_file, "r")]
         lines.reverse()
-        print(_("Last %s cinder syslog entries:-") % (entries))
+        print(unicode(_("Last %s cinder syslog entries:-") % (entries)))
         for line in lines:
             if line.find("cinder") > 0:
                 count += 1
-                print(_("%s") % (line))
+                print(unicode(_("%s") % (line)))
             if count == entries:
                 break
 
         if count == 0:
-            print(_("No cinder entries in syslog!"))
+            print(unicode(_("No cinder entries in syslog!")))
 
 
 class BackupCommands(object):
@@ -388,7 +388,7 @@ class BackupCommands(object):
         backups = objects.BackupList.get_all(ctxt)
 
         hdr = "%-32s\t%-32s\t%-32s\t%-24s\t%-24s\t%-12s\t%-12s\t%-12s\t%-12s"
-        print(hdr % (_('ID'),
+        print(unicode(hdr % (_('ID'),
                      _('User ID'),
                      _('Project ID'),
                      _('Host'),
@@ -396,14 +396,14 @@ class BackupCommands(object):
                      _('Container'),
                      _('Status'),
                      _('Size'),
-                     _('Object Count')))
+                     _('Object Count'))))
 
         res = "%-32s\t%-32s\t%-32s\t%-24s\t%-24s\t%-12s\t%-12s\t%-12d\t%-12d"
         for backup in backups:
             object_count = 0
             if backup['object_count'] is not None:
                 object_count = backup['object_count']
-            print(res % (backup['id'],
+            print(unicode(res % (backup['id'],
                          backup['user_id'],
                          backup['project_id'],
                          backup['host'],
@@ -411,7 +411,7 @@ class BackupCommands(object):
                          backup['container'],
                          backup['status'],
                          backup['size'],
-                         object_count))
+                         object_count)))
 
 
 class ServiceCommands(object):
@@ -421,12 +421,12 @@ class ServiceCommands(object):
         ctxt = context.get_admin_context()
         services = objects.ServiceList.get_all(ctxt)
         print_format = "%-16s %-36s %-16s %-10s %-5s %-10s"
-        print(print_format % (_('Binary'),
+        print(unicode(print_format % (_('Binary'),
                               _('Host'),
                               _('Zone'),
                               _('Status'),
                               _('State'),
-                              _('Updated At')))
+                              _('Updated At'))))
         for svc in services:
             alive = utils.service_is_up(svc)
             art = ":-)" if alive else "XXX"
@@ -436,9 +436,9 @@ class ServiceCommands(object):
             updated_at = svc.updated_at
             if updated_at:
                 updated_at = timeutils.normalize_time(updated_at)
-            print(print_format % (svc.binary, svc.host.partition('.')[0],
+            print(unicode(print_format % (svc.binary, svc.host.partition('.')[0],
                                   svc.availability_zone, status, art,
-                                  updated_at))
+                                  updated_at)))
 
     @args('binary', type=str,
           help='Service to delete from the host.')
@@ -451,13 +451,13 @@ class ServiceCommands(object):
             svc = objects.Service.get_by_args(ctxt, host_name, binary)
             svc.destroy()
         except exception.HostBinaryNotFound as e:
-            print(_("Host not found. Failed to remove %(service)s"
+            print(unicode(_("Host not found. Failed to remove %(service)s"
                     " on %(host)s.") %
-                  {'service': binary, 'host': host_name})
+                  {'service': binary, 'host': host_name}))
             print (u"%s" % e.args)
             return 2
-        print(_("Service %(service)s on host %(host)s removed.") %
-              {'service': binary, 'host': host_name})
+        print(unicode(_("Service %(service)s on host %(host)s removed.") %
+              {'service': binary, 'host': host_name}))
 
 CATEGORIES = {
     'backup': BackupCommands,
@@ -542,12 +542,12 @@ def main():
     CONF.register_cli_opt(category_opt)
     script_name = sys.argv[0]
     if len(sys.argv) < 2:
-        print(_("\nOpenStack Cinder version: %(version)s\n") %
-              {'version': version.version_string()})
-        print(script_name + " category action [<args>]")
-        print(_("Available categories:"))
+        print(unicode(_("\nOpenStack Cinder version: %(version)s\n") %
+              {'version': version.version_string()}))
+        print(unicode(script_name + " category action [<args>]"))
+        print(unicode(_("Available categories:")))
         for category in CATEGORIES:
-            print(_("\t%s") % category)
+            print(unicode(_("\t%s") % category))
         sys.exit(2)
 
     try:
@@ -555,19 +555,19 @@ def main():
              version=version.version_string())
         logging.setup(CONF, "cinder")
     except cfg.ConfigDirNotFoundError as details:
-        print(_("Invalid directory: %s") % details)
+        print(unicode(_("Invalid directory: %s") % details))
         sys.exit(2)
     except cfg.ConfigFilesNotFoundError:
         cfgfile = CONF.config_file[-1] if CONF.config_file else None
         if cfgfile and not os.access(cfgfile, os.R_OK):
             st = os.stat(cfgfile)
-            print(_("Could not read %s. Re-running with sudo") % cfgfile)
+            print(unicode(_("Could not read %s. Re-running with sudo") % cfgfile))
             try:
                 os.execvp('sudo', ['sudo', '-u', '#%s' % st.st_uid] + sys.argv)
             except Exception:
-                print(_('sudo failed, continuing as if nothing happened'))
+                print(unicode(_('sudo failed, continuing as if nothing happened')))
 
-        print(_('Please re-run cinder-manage as root.'))
+        print(unicode(_('Please re-run cinder-manage as root.')))
         sys.exit(2)
 
     fn = CONF.category.action_fn
